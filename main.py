@@ -1,4 +1,5 @@
 import requests
+import configparser
 
 
 class Host:
@@ -21,8 +22,6 @@ class Interface:
 
 
 class Demand:
-    USERNAME = "user"
-    PASSWORD = "password"
     NUM_VALUES = 1  # Data is collected every 3 minutes
     API_URL = "https://phonebox.tegola.org.uk/api_jsonrpc.php"
     # ITEM_IDS = ["45645",  # SSH -> COR Bits Received
@@ -94,18 +93,21 @@ class Demand:
     }
 
     def __init__(self):
+        config = configparser.ConfigParser()
+        config.read_file(open(r'app.config'))
+
         data = {
             "jsonrpc": "2.0",
             "method": "user.login",
             "params": {
-                "user": self.USERNAME,
-                "password": self.PASSWORD
+                "user": config.get("credentials", "username"),
+                "password": config.get("credentials", "password")
             },
             "id": 1,
             "auth": None
         }
-        request = requests.post(self.API_URL, json=data)
 
+        request = requests.post(self.API_URL, json=data)
         self.AUTH_TOKEN = request.json()["result"]
 
     def run(self):
