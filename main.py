@@ -94,7 +94,7 @@ class Demand:
 
     def __init__(self):
         config = configparser.ConfigParser()
-        config.read_file(open(r'app.config'))
+        config.read_file(open(r'config.ini'))
 
         data = {
             "jsonrpc": "2.0",
@@ -108,6 +108,8 @@ class Demand:
         }
 
         request = requests.post(self.API_URL, json=data)
+
+        self.NUM_VALUES = config.get("credentials", "num_of_values")
         self.AUTH_TOKEN = request.json()["result"]
 
     def run(self):
