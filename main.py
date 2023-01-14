@@ -111,10 +111,37 @@ class Demand:
 
         self.NUM_VALUES = config.get("credentials", "num_of_values")
         self.AUTH_TOKEN = request.json()["result"]
+        self.hosts = {}
+        self.hosts_dict = {}
 
     def run(self):
         print(self.AUTH_TOKEN)
         self.cleanup()
+
+    def get_data(self):
+
+        for host in self.ITEM_IDS:
+            for interface in host:
+                for id in ["sent", "received"]:
+                    data = {
+                        "jsonrpc": "2.0",
+                        "method": "history.get",
+                        "params": {
+                            "output": "extend",
+                            "history": 3,
+                            "itemids": item_id,
+                            "sortfield": "clock",
+                            "sortorder": "DESC",
+                            "limit": NUM_VALUES
+                        },
+                        "auth": AUTH_TOKEN,
+                        "id": 1
+                    }
+
+        pass
+
+    def create_json(self):
+        pass
 
     def cleanup(self):
         data = {
