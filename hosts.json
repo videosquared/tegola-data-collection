@@ -1,0 +1,42 @@
+{
+    "ssh": {
+        "cor": {
+            "sent": "45813",
+            "received": "45645"
+        },
+        "smo": {
+            "sent": "45814",
+            "received": "45646"
+        }
+    },
+    "smo": {
+        "ssh": {
+            "sent": "47857",
+            "received": "47713"
+        },
+        "cor": {
+            "sent": "47856",
+            "received": "47712"
+        }
+    },
+    "mhi": {
+        "cor": {
+            "sent": "47116",
+            "received": "47065"
+        }
+    },
+    "cor": {
+        "ssh": {
+            "sent": "48814",
+            "received": "48769"
+        },
+        "mhi": {
+            "sent": "48811",
+            "received": "48766"
+        },
+        "SMO": {
+            "sent": "48812",
+            "received": "48767"
+        }
+    }
+}

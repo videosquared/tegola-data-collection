@@ -8,17 +8,29 @@ class Host:
         self.name = name
         self.description = description
         self.interfaces = []
+        self.interface_dict = {}
+
+    def __str__(self):
+
+        output = f"#### Name: {self.name} ####\n"
+
+        for i in self.interfaces:
+            output += str(i) + "\n"
+
+        return output
 
 
 class Interface:
 
-    def __init__(self, name, source, destination, description=""):
-        self.name = name
+    def __init__(self, source, destination, description=""):
         self.description = description
         self.source = source
         self.destination = destination
         self.bits_sent = []
         self.bits_received = []
+
+    def __str__(self):
+        return f"Destination: {self.destination}\nBits Sent: {self.bits_sent}\nBits Received: {self.bits_received}"
 
 
 class Demand:
@@ -109,39 +121,61 @@ class Demand:
 
         request = requests.post(self.API_URL, json=data)
 
-        self.NUM_VALUES = config.get("credentials", "num_of_values")
+        self.NUM_VALUES = config.get("config", "num_of_values")
         self.AUTH_TOKEN = request.json()["result"]
-        self.hosts = {}
+        self.hosts = []
         self.hosts_dict = {}
 
     def run(self):
-        print(self.AUTH_TOKEN)
+        self.get_data()
+
+        for host in self.hosts:
+            print(host)
+
         self.cleanup()
 
     def get_data(self):
+        for origin in self.ITEM_IDS:
+            host = Host(origin)
+            for destination in self.ITEM_IDS.get(origin):
+                interface = Interface(origin, destination)
+                sent_request = requests.post(self.API_URL, json=self.create_json(
+                    self.ITEM_IDS.get(origin).get(destination).get("sent")))
+                received_request = requests.post(self.API_URL, json=self.create_json(
+                    self.ITEM_IDS.get(origin).get(destination).get("received")))
 
-        for host in self.ITEM_IDS:
-            for interface in host:
-                for id in ["sent", "received"]:
-                    data = {
-                        "jsonrpc": "2.0",
-                        "method": "history.get",
-                        "params": {
-                            "output": "extend",
-                            "history": 3,
-                            "itemids": item_id,
-                            "sortfield": "clock",
-                            "sortorder": "DESC",
-                            "limit": NUM_VALUES
-                        },
-                        "auth": AUTH_TOKEN,
-                        "id": 1
-                    }
+                sent_json = sent_request.json()
+                received_json = received_request.json()
 
-        pass
+                print(sent_json)
 
-    def create_json(self):
-        pass
+                for sent_value, received_value in zip(sent_json["result"], received_json["result"]):
+                    interface.bits_sent.append(sent_value["value"])
+                    interface.bits_received.append(received_value["value"])
+
+                host.interfaces.append(interface)
+                host.interface_dict[interface.destination] = interface
+
+            self.hosts.append(host)
+            self.hosts_dict[host.name] = host
+
+    def create_json(self, item_id):
+        data = {
+            "jsonrpc": "2.0",
+            "method": "history.get",
+            "params": {
+                "output": "extend",
+                "history": 3,
+                "itemids": item_id,
+                "sortfield": "clock",
+                "sortorder": "DESC",
+                "limit": self.NUM_VALUES
+            },
+            "auth": self.AUTH_TOKEN,
+            "id": 1
+        }
+
+        return data
 
     def cleanup(self):
         data = {
