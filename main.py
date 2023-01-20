@@ -34,6 +34,12 @@ class Interface:
     def __str__(self):
         return f"Destination: {self.destination}\nBits Sent: {self.bits_sent}\nBits Received: {self.bits_received}"
 
+    def get_average_bits_sent(self):
+        return sum(self.bits_sent) / len(self.bits_sent)
+
+    def get_average_bits_received(self):
+        return sum(self.bits_received) / len(self.bits_received)
+
 
 class Demand:
     def __init__(self):
