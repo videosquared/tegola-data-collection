@@ -2,11 +2,13 @@ import json
 
 import requests
 import configparser
+import numpy as np
 
 
 class Host:
 
-    def __init__(self, name, description=""):
+    def __init__(self, name, host_id, description=""):
+        self.host_id = host_id
         self.name = name
         self.description = description
         self.interfaces = []
@@ -14,7 +16,7 @@ class Host:
 
     def __str__(self):
 
-        output = f"#### Name: {self.name} ####\n"
+        output = f"#### Name: {self.name} ({self.host_id}) ####\n"
 
         for i in self.interfaces:
             output += str(i) + "\n"
@@ -24,7 +26,8 @@ class Host:
 
 class Interface:
 
-    def __init__(self, source, destination, description=""):
+    def __init__(self, source, destination, dest_id, description=""):
+        self.destination_id = dest_id
         self.description = description
         self.source = source
         self.destination = destination
@@ -32,7 +35,7 @@ class Interface:
         self.bits_received = []
 
     def __str__(self):
-        return f"Destination: {self.destination}\nAvg Bits Sent: {str(self.get_average_bits_sent())}\nAvg Bits Received: {str(self.get_average_bits_received())}"
+        return f"Destination: {self.destination}\nDestination ID: {self.destination_id}\nBits Sent: {self.bits_sent}\nBits Received: {self.bits_received}"
 
     def get_average_bits_sent(self):
         return sum(self.bits_sent) / len(self.bits_sent)
@@ -43,6 +46,7 @@ class Interface:
 
 class Demand:
     def __init__(self):
+        np.set_printoptions(suppress=True)
         config = configparser.ConfigParser()
         config.read_file(open(r'config.ini'))
 
@@ -76,13 +80,19 @@ class Demand:
         for host in self.hosts:
             print(host)
 
+        self.generate_demand_matrix()
+
         self.cleanup()
 
     def get_data(self):
         for origin in self.ITEM_IDS:
-            host = Host(origin)
+            host = Host(origin, self.ITEM_IDS.get(origin).get("id"))
+
             for destination in self.ITEM_IDS.get(origin):
-                interface = Interface(origin, destination)
+                if destination == "id":
+                    continue
+
+                interface = Interface(origin, destination, self.ITEM_IDS.get(origin).get(destination).get("id"))
                 sent_request = requests.post(self.API_URL, json=self.create_json(
                     self.ITEM_IDS.get(origin).get(destination).get("sent")))
                 received_request = requests.post(self.API_URL, json=self.create_json(
@@ -121,6 +131,20 @@ class Demand:
 
         return data
 
+    # IDs are as follows:
+    # SSH: 0
+    # COR: 1
+    # SMO: 2
+    # MHI: 3
+    def generate_demand_matrix(self):
+        demand_matrix = np.zeros(shape=(len(self.hosts_dict), len(self.hosts_dict)))
+
+        for host in self.hosts:
+            for interface in host.interfaces:
+                demand_matrix[host.host_id, interface.destination_id] = interface.get_average_bits_sent()
+
+        print(demand_matrix)
+
     def cleanup(self):
         data = {
             "jsonrpc": "2.0",
@@ -137,28 +161,3 @@ class Demand:
 if __name__ == "__main__":
     demand = Demand()
     demand.run()
-
-# ITEM_IDS = ["45645",  # SSH -> COR Bits Received
-#             "45813",  # SSH -> COR Bits Sent
-#
-#             "45646",  # SSH -> SMO Bits Received
-#             "45814",  # SSH -> SMO Bits Sent
-#             ####
-#             "47713",  # SMO -> SSH Bits Received
-#             "47857",  # SMO -> SSH Bits Sent
-#
-#             "47712",  # SMO -> COR Bits Received
-#             "47856",  # SMO -> COR Bits Sent
-#             ####
-#             "47065",  # MHI -> COR Bits Received
-#             "47116",  # MHI -> COR Bits Sent
-#             ####
-#             "48766",  # COR -> MHI Bits Received
-#             "48811",  # COR -> MHI Bits Sent
-#
-#             "48769",  # COR -> SSH Bits Received
-#             "48814",  # COR -> SSH Bits Sent
-#
-#             "48767",  # COR -> SMO Bits Received
-#             "48812"   # COR -> SMO Bits Sent
-#             ]
