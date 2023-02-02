@@ -32,7 +32,7 @@ class Interface:
         self.bits_received = []
 
     def __str__(self):
-        return f"Destination: {self.destination}\nBits Sent: {self.bits_sent}\nBits Received: {self.bits_received}"
+        return f"Destination: {self.destination}\nAvg Bits Sent: {str(self.get_average_bits_sent())}\nAvg Bits Received: {str(self.get_average_bits_received())}"
 
     def get_average_bits_sent(self):
         return sum(self.bits_sent) / len(self.bits_sent)
@@ -94,8 +94,8 @@ class Demand:
                 print(sent_json)
 
                 for sent_value, received_value in zip(sent_json["result"], received_json["result"]):
-                    interface.bits_sent.append(sent_value["value"])
-                    interface.bits_received.append(received_value["value"])
+                    interface.bits_sent.append(int(sent_value["value"]))
+                    interface.bits_received.append(int(received_value["value"]))
 
                 host.interfaces.append(interface)
                 host.interface_dict[interface.destination] = interface
@@ -131,7 +131,7 @@ class Demand:
         }
 
         req = requests.post(self.API_URL, json=data)
-        print(req.json()["result"])
+        print(f"Logout: {req.json()['result']}")
 
 
 if __name__ == "__main__":
