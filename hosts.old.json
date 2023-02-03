@@ -12,8 +12,34 @@
             "received": "45646"
         }
     },
+    "smo": {
+        "id": 2,
+        "ssh": {
+            "id": 0,
+            "sent": "47857",
+            "received": "47713"
+        },
+        "cor": {
+            "id": 1,
+            "sent": "47856",
+            "received": "47712"
+        }
+    },
+    "mhi": {
+        "id": 3,
+        "cor": {
+            "id": 1,
+            "sent": "47116",
+            "received": "47065"
+        }
+    },
     "cor": {
         "id": 1,
+        "ssh": {
+            "id": 0,
+            "sent": "48814",
+            "received": "48769"
+        },
         "mhi": {
             "id": 3,
             "sent": "48811",
