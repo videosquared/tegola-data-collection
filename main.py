@@ -1,47 +1,14 @@
-import json
-
-import requests
+from Host import Host
+from Interface import Interface
 import configparser
+import json
 import numpy as np
+import requests
 
 
-class Host:
-
-    def __init__(self, name, host_id, description=""):
-        self.host_id = host_id
-        self.name = name
-        self.description = description
-        self.interfaces = []
-        self.interface_dict = {}
-
-    def __str__(self):
-
-        output = f"#### Name: {self.name} ({self.host_id}) ####\n"
-
-        for i in self.interfaces:
-            output += str(i) + "\n"
-
-        return output
-
-
-class Interface:
-
-    def __init__(self, source, destination, dest_id, description=""):
-        self.destination_id = dest_id
-        self.description = description
-        self.source = source
-        self.destination = destination
-        self.bits_sent = []
-        self.bits_received = []
-
-    def __str__(self):
-        return f"Destination: {self.destination}\nDestination ID: {self.destination_id}\nBits Sent: {self.bits_sent}\nBits Received: {self.bits_received}"
-
-    def get_average_bits_sent(self):
-        return sum(self.bits_sent) / len(self.bits_sent)
-
-    def get_average_bits_received(self):
-        return sum(self.bits_received) / len(self.bits_received)
+def main():
+    demand = Demand()
+    demand.run()
 
 
 class Demand:
@@ -49,8 +16,6 @@ class Demand:
         np.set_printoptions(suppress=True)
         config = configparser.ConfigParser()
         config.read_file(open(r'config.ini'))
-
-        id_file = open("hosts.json")
 
         data = {
             "jsonrpc": "2.0",
@@ -66,13 +31,11 @@ class Demand:
         request = requests.post(config.get("config", "api_url"), json=data)
 
         self.NUM_VALUES = config.get("config", "num_of_values")
-        self.ITEM_IDS = json.load(id_file)
+        self.ITEM_IDS = json.load(open(r"hosts.json"))
         self.AUTH_TOKEN = request.json()["result"]
         self.API_URL = config.get("config", "api_url")
         self.hosts = []
         self.hosts_dict = {}
-
-        id_file.close()
 
     def run(self):
         self.get_data()
@@ -159,5 +122,4 @@ class Demand:
 
 
 if __name__ == "__main__":
-    demand = Demand()
-    demand.run()
+    main()
