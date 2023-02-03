@@ -101,12 +101,16 @@ class Demand:
     # MHI: 3
     def generate_demand_matrix(self):
         demand_matrix = np.zeros(shape=(len(self.hosts_dict), len(self.hosts_dict)))
+        interface_matrix = [["", ""], ["", ""]]
 
         for host in self.hosts:
             for interface in host.interfaces:
-                demand_matrix[host.host_id, interface.destination_id] = interface.get_average_bits_sent()
+                if interface.destination_id != 1:
+                    demand_matrix[interface.destination_id-2, host.host_id] = interface.get_average_bits_sent()
+                    interface_matrix[interface.destination_id-2][host.host_id] = f"{host.name} -> {interface.destination}"
 
         print(demand_matrix)
+        print(interface_matrix)
 
     def cleanup(self):
         data = {

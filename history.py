@@ -20,7 +20,7 @@ def main():
 
 
 class History:
-    NUM_DAYS = 4
+    NUM_DAYS = 20
 
     MINUTE = 60
     HOUR = 3600
@@ -48,8 +48,8 @@ class History:
 
     def get_data(self):
         print("Getting data...")
-        # time_orig = int(time.time())
-        time_orig = 1672531200
+        time_orig = int(time.time())
+        # time_orig = 1672531200
 
         for h in self.item_ids:
             orig = self.item_ids.get(h)
@@ -84,6 +84,8 @@ class History:
                 host.add_interface(interface)
 
             self.add_host(host)
+
+        self.get_whix_data()
 
         print("Finished getting data.")
 
@@ -124,12 +126,11 @@ class History:
         cor_mhi = cor.interface_dict.get("mhi").get_sent_trend_as_df()
 
         smo_data = []
-        print("shit")
+
         for ssh_smo_val, cor_smo_val in zip(ssh_smo["value"].values.tolist(), cor_smo["value"].values.tolist()):
             smo_data.append(ssh_smo_val + cor_smo_val)
 
         mhi_data = cor_mhi["value"].values.tolist()
-        print("fuck")
         print("mhi data:")
         print(mhi_data)
         print("smo data:")
@@ -147,6 +148,9 @@ class History:
     def add_host(self, host):
         self.hosts.append(host)
         self.hosts_dict[host.name] = host
+
+    def get_whix_data(self):
+        time_orig = int(time.time())
 
     def create_trend_json(self, i_id, time_from, time_till):
         return {
